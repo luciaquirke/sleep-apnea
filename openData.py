@@ -8,19 +8,29 @@ import os
 import wfdb
 import csv
 
+operatingSystem = 'linux'
+
+if operatingSystem == 'linux':
+    dataPath = '/data/mit-bih-polysomnographic-database-1.0.0/'
+    inputsPath = '/data/inputs/'
+else:
+    dataPath = '\\data\\mit-bih-polysomnographic-database-1.0.0\\'
+    inputsPath = '\\data\\inputs\\'
+    
 recordList = wfdb.get_record_list('slpdb')
 apneaLabels = np.array(['H', 'HA', 'OA', 'CA', 'CAA', 'X'])
-#dataListOfLists = []
 inputArray = np.empty((0,1))
 outputArray = np.empty((0,1))
+recordNumber = 1
 
 for record in recordList:
+    print('new record')
 
     #Read the annotations 
-    annsamp = wfdb.rdann(os.getcwd() + '\\data\\mit-bih-polysomnographic-database-1.0.0\\' + record, extension='st', summarize_labels=True) #annsamp = wfdb.rdann(os.getcwd() + '/data/mit-bih-polysomnographic-database-1.0.0/' + record, extension='st', summarize_labels=True)
+    annsamp = wfdb.rdann(os.getcwd() + dataPath + record, extension='st', summarize_labels=True)
     
     #Read the data, create a Record
-    sig = wfdb.rdrecord(os.getcwd() + '\\data\\mit-bih-polysomnographic-database-1.0.0\\' + record, channels=[2]) #sig = wfdb.rdrecord(os.getcwd() + '/data/mit-bih-polysomnographic-database-1.0.0/' + record, channels=[2])
+    sig = wfdb.rdrecord(os.getcwd() + dataPath + record, channels=[2]) 
     
     actualPSignal = sig.p_signal
     
@@ -42,20 +52,19 @@ for record in recordList:
     #add all epochs to an array, row by row
     trimmedNumberEpochs = len(actualPSignal)/7500
     epochs = np.split(actualPSignal, trimmedNumberEpochs)
-    index = 0
+    index = 1
 
     for epoch in epochs:
-        #create input/output arrays to CNN with shapes (numberEpochs, steps, channels) and (classification) respectively
-        #inputArray = np.vstack([inputArray, epoch])
-        #outputArray = np.vstack([outputArray, annsamp.aux_note[index]])
-        index = index + 1
 
         #save input and output arrays as csv files
-        with open(os.getcwd() + '\\data\\inputs\\' + str(index) + '.csv','w') as filehandler: #/data/inputs/
-            print('writing file')
+        with open(os.getcwd() + inputsPath + str(recordNumber) + '_' + str(index) + '.csv','w') as filehandler: #/data/inputs/
             csvWriter = csv.writer(filehandler,delimiter=' ')
             csvWriter.writerows(epoch)
+        
+        index = index + 1
 
         #with open("/home/anaconda3/envs/sleep-apnea/data/targets/" + str(index) + ".csv","w") as filehandler:
         #    csvWriter = csv.writer(filehandler,delimiter=' ')
         #    csvWriter.writerows(outputArray)
+    
+    recordNumber = recordNumber + 1
