@@ -2,15 +2,17 @@ import numpy as np
 import pandas as pd
 import os
 import sklearn
+import keras
 
 from sklearn.model_selection import train_test_split
 
-""" from keras.models import Sequential
+from keras.models import Sequential
 from keras.layers import Dense
 from keras.layers import Flatten
 from keras.layers import Dropout
 from keras.layers.convolutional import Conv1D
-from keras.layers.convolutional import MaxPooling1D """
+from keras.layers.convolutional import MaxPooling1D
+from keras.utils import to_categorical
 
 #change to current OS
 operatingSystem = 'windows'
@@ -30,6 +32,8 @@ def load_file(filepath):
 xLoaded = list()
 yLoaded = []
 
+print("Loading Data...")
+
 for root, dirs, files in os.walk('.' + inputsPath):
     for fileName in files:
         xData = load_file(os.getcwd() + inputsPath + fileName)
@@ -41,28 +45,50 @@ for root, dirs, files in os.walk('.' + inputsPath):
 X = np.stack(xLoaded, axis = 0) 
 # Y is simply an array of data
 Y = yLoaded
+print(Y)
 
+Y = to_categorical(Y)
+X = np.array(X)
+Y = np.array(Y)
+Y = Y.reshape(-1, 2)
+print(Y)
 print(X.shape)
-print(len(Y))
+
+
+#Use to check the balance of classes in the data
+# ones = 0
+# for event in Y:
+#     if event == 1:
+#         ones+=1
+
+# print(((ones/len(Y))*100), "%")
 
 xTrain, xTest, yTrain, yTest = train_test_split(X, Y, test_size = 0.3)
-print(xTrain.shape)
-print(len(yTrain))
-print(xTest.shape)
-print(len(yTest))
 
-verbose, epochs, batch_size = 0, 10, 32
-#CNN layers
-""" model = Sequential()
-model.add(Conv1D(filters=128, kernel_size=7, activation='relu', input_shape=(7500,1)))
-model.add(Conv1D(filters=128, kernel_size=7, activation='relu')
-model.add(MaxPooling1D(pool_size=2))
-model.add(Conv1D(filters=256, kernel_size=7, activation='relu')
-model.add(Conv1D(filters=256, kernel_size=7, activation='relu')
-model.add(MaxPooling1D(pool_size=2))
-model.add(Flatten())
-model.add(Dense(100, activation='relu'))    #Not sure about 100 - size of output of dense layer
-model.add(Dense(2, activation='softmax')) """
+print("Data Ready")
+
+def evaluate_model(xTrain, yTrain, xTest, yTest):
+    verbose, epochs, batch_size = 1, 10, 32
+    #CNN layers
+    model = Sequential()
+    model.add(Conv1D(filters=64, kernel_size=7, activation='relu', input_shape=(7500,1)))
+    model.add(Conv1D(filters=64, kernel_size=7, activation='relu'))
+    model.add(MaxPooling1D(pool_size=2))
+    model.add(Conv1D(filters=128, kernel_size=7, activation='relu'))
+    model.add(Conv1D(filters=128, kernel_size=7, activation='relu'))
+    model.add(MaxPooling1D(pool_size=2))
+    model.add(Flatten())
+    model.add(Dense(100, activation='relu'))    #Not sure about 100 - size of output of dense layer
+    model.add(Dense(2, activation='softmax'))
+    model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
+
+    model.fit(xTrain, yTrain, epochs=epochs, batch_size=batch_size, verbose=verbose)
+    _, accuracy = model.evaluate(xTest, yTest, batch_size=batch_size, verbose=0)
+    return accuracy
+
+score = evaluate_model(xTrain, yTrain, xTest, yTest)
+score = score * 100.0
+print(score, "%")
 
 #Ideas for improvement: 
 #   Add dropout
