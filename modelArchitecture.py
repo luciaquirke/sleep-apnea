@@ -12,8 +12,10 @@ from keras.models import Sequential
 from keras.layers import Dense
 from keras.layers import Flatten
 from keras.layers import Dropout
+from keras.layers import Activation
 from keras.layers.convolutional import Conv1D
 from keras.layers.convolutional import MaxPooling1D
+from keras.layers.normalization import BatchNormalization
 from keras.utils import to_categorical
 
 #change to current OS
@@ -88,7 +90,7 @@ def evaluate_model(xTrain, yTrain, xTest, yTest):
     model.add(Flatten())
     model.add(Dense(15, activation='elu')) 
     model.add(Dropout(0.5))
-    
+
     model.add(Dense(2, activation='softmax'))
     model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy', d_prime])
 
