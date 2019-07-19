@@ -9,7 +9,7 @@ import wfdb
 import csv
 
 #change to current OS
-operatingSystem = 'linux'
+operatingSystem = 'windows'
 
 if operatingSystem == 'linux':
     dataPath = '/data/mit-bih-polysomnographic-database-1.0.0/'
