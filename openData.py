@@ -7,6 +7,7 @@ import numpy as np
 import os
 import wfdb
 import csv
+from sklearn import preprocessing
 
 #change to current OS
 operatingSystem = 'windows'
@@ -51,6 +52,9 @@ for record in recordList:
     if numberEpochs != len(annsamp.aux_note):
         startingIndex = int(numberEpochs - len(annsamp.aux_note))
         actualPSignal = actualPSignal[startingIndex*7500:]
+
+    #standardise signal
+    actualPSignal = preprocessing.scale(actualPSignal)
 
     #write each epoch to a csv file, named by record number and epoch number
     trimmedNumberEpochs = len(actualPSignal)/7500
