@@ -7,6 +7,7 @@ import keras.backend as k
 
 from sklearn.model_selection import train_test_split
 from sklearn import preprocessing
+from sklearn.utils import shuffle
 
 from keras.models import Sequential
 from keras.layers import Dense
@@ -51,13 +52,15 @@ X = np.stack(xLoaded, axis = 0)
 Y = yLoaded
 
 X = np.array(X)
-X = preprocessing.scale(X)
 
 Y = to_categorical(Y)
 Y = np.array(Y)
 Y = Y.reshape(-1, 2)
+xShuffle, yShuffle = shuffle(X, Y)
 
 print(X.shape)
+print(Y.shape)
+
 
 
 #Use to check the balance of classes in the data
@@ -68,7 +71,7 @@ print(X.shape)
 
 # print(((ones/len(Y))*100), "%")
 
-xTrain, xTest, yTrain, yTest = train_test_split(X, Y, test_size = 0.3)
+xTrain, xTest, yTrain, yTest = train_test_split(xShuffle, yShuffle, test_size = 0.3)
 
 print("Data Ready")
 
@@ -85,14 +88,19 @@ def evaluate_model(xTrain, yTrain, xTest, yTest):
     model.add(Conv1D(filters=128, kernel_size=125))
     model.add(BatchNormalization())
     model.add(Activation('elu'))
-    model.add(MaxPooling1D(pool_size=75))
+    model.add(MaxPooling1D(pool_size=15))
+
+    model.add(Conv1D(filters=128, kernel_size=25))
+    model.add(BatchNormalization())
+    model.add(Activation('elu'))
+    model.add(MaxPooling1D(pool_size=5))
 
     model.add(Flatten())
     model.add(Dense(15, activation='elu')) 
     model.add(Dropout(0.5))
 
     model.add(Dense(2, activation='softmax'))
-    model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy', d_prime])
+    model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
 
     model.fit(xTrain, yTrain, epochs=epochs, batch_size=batch_size, verbose=verbose)
     _, accuracy = model.evaluate(xTest, yTest, batch_size=batch_size, verbose=0)
