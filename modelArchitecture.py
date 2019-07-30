@@ -4,10 +4,15 @@ import os
 import sklearn
 import keras
 import keras.backend as k
+import seaborn as sn
+import matplotlib.pyplot as plt
+import h5py
 
 from sklearn.model_selection import train_test_split
 from sklearn import preprocessing
 from sklearn.utils import shuffle
+from sklearn.metrics import confusion_matrix
+from sklearn.metrics import classification_report
 
 from keras.models import Sequential
 from keras.layers import Dense
@@ -18,6 +23,7 @@ from keras.layers.convolutional import Conv1D
 from keras.layers.convolutional import MaxPooling1D
 from keras.layers.normalization import BatchNormalization
 from keras.utils import to_categorical
+from keras.callbacks import EarlyStopping
 
 #change to current OS
 operatingSystem = 'windows'
@@ -51,18 +57,6 @@ X = np.stack(xLoaded, axis = 0)
 # Y is simply an array of data
 Y = yLoaded
 
-X = np.array(X)
-
-Y = to_categorical(Y)
-Y = np.array(Y)
-Y = Y.reshape(-1, 2)
-xShuffle, yShuffle = shuffle(X, Y)
-
-print(X.shape)
-print(Y.shape)
-
-
-
 #Use to check the balance of classes in the data
 # ones = 0
 # for event in Y:
@@ -71,66 +65,67 @@ print(Y.shape)
 
 # print(((ones/len(Y))*100), "%")
 
-xTrain, xTest, yTrain, yTest = train_test_split(xShuffle, yShuffle, test_size = 0.3)
+Y = np.array(Y)
+
+Y = to_categorical(Y)
+Y = Y.reshape(-1, 2)
+
+xShuffle, yShuffle = shuffle(X, Y, random_state = 2)
+
+print(X.shape)
+print(Y.shape)
+
+xTrain, xTest, yTrain, yTest = train_test_split(xShuffle, yShuffle, test_size = 0.2)
 
 print("Data Ready")
 
-def evaluate_model(xTrain, yTrain, xTest, yTest):
-    verbose, epochs, batch_size = 1, 10, 32
-    #CNN layers
-    model = Sequential()
+verbose, epochs, batch_size = 1, 10, 32
+#class_weights = {0: 0.3, 1: 0.7}
+#CNN layers
+model = Sequential()
 
-    model.add(Conv1D(filters=64, kernel_size=250, input_shape=(7500,1)))
-    model.add(BatchNormalization())
-    model.add(Activation('elu'))
-    model.add(MaxPooling1D(pool_size=4))
+model.add(Conv1D(filters=40, kernel_size=250, input_shape=(7500,1)))
+model.add(BatchNormalization())
+model.add(Activation('elu'))
+model.add(MaxPooling1D(pool_size=15))
 
-    model.add(Conv1D(filters=128, kernel_size=125))
-    model.add(BatchNormalization())
-    model.add(Activation('elu'))
-    model.add(MaxPooling1D(pool_size=15))
+model.add(Conv1D(filters=40, kernel_size=75))
+model.add(BatchNormalization())
+model.add(Activation('elu'))
+model.add(MaxPooling1D(pool_size=5))
 
-    model.add(Conv1D(filters=128, kernel_size=25))
-    model.add(BatchNormalization())
-    model.add(Activation('elu'))
-    model.add(MaxPooling1D(pool_size=5))
+model.add(Conv1D(filters=60, kernel_size=10))
+model.add(BatchNormalization())
+model.add(Activation('elu'))
+model.add(MaxPooling1D(pool_size=5))
 
-    model.add(Flatten())
-    model.add(Dense(15, activation='elu')) 
-    model.add(Dropout(0.5))
+model.add(Flatten())
+model.add(Dense(15, activation='elu')) 
+model.add(Dropout(0.5))
 
-    model.add(Dense(2, activation='softmax'))
-    model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
+model.add(Dense(2, activation='softmax'))
+model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
 
-    model.fit(xTrain, yTrain, epochs=epochs, batch_size=batch_size, verbose=verbose)
-    _, accuracy = model.evaluate(xTest, yTest, batch_size=batch_size, verbose=0)
-    return accuracy
+history = model.fit(xTrain, yTrain, epochs=epochs, batch_size=batch_size, verbose=verbose)
+_, accuracy = model.evaluate(xTest, yTest, batch_size=batch_size, verbose=0)
+yPred = model.predict(xTest)
 
-score = evaluate_model(xTrain, yTrain, xTest, yTest)
-score = score * 100.0
-print(score, "%")
+#Calculate accuracy as a percentage
+accuracy = accuracy * 100.0
+print(accuracy, "%")
 
-hits = 0
-falseAlarms = 0
-iterations = 1
+#Generate confusion matrix
+matrix = confusion_matrix(yTest.argmax(axis=1), yPred.argmax(axis=1))
+print(np.matrix(matrix))
 
-# def d_prime(y_true, y_pred):
-#     meanX = np.flatten(X).mean(axis=1)
-#     stdX = np.flatten(X).std(X)
-#     if(np.logical_and(k.eval(y_true) == 0, k.eval(y_pred) == 1)):
-#         falseAlarms += 1
-#     elif (np.logical_and(k.eval(y_true) == 1, k.eval(y_pred) == 1)):
-#         hits += 1
+#Generate classification report
+target_names = ['non-apnea', 'apnea']
+print(classification_report(yTest.argmax(axis=1), yPred.argmax(axis=1), target_names=target_names))
 
-#     d_prime = (meanX - stdX)/sqrt(0.5*((hits/iterations)^2 + (falseAlarms/iterations)^2))
+print(model.summary())
 
-#     iterations = iterations + 1
+#Save the model. Change the name depending on the date/model
+model.save('model_30_07_19_2.h5')
+print('Model Saved')
 
-#     return d_prime
-
-#Ideas for improvement: 
-#   Add dropout
-#   Add more layers
-#   Experiment with kernel size
-#   Experiment with number of filters/features
 
