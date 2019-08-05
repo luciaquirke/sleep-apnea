@@ -1,1 +1,8 @@
 data.zip
+*.csv
+*.dat
+*.ecg
+*.xws
+*.hea
+*.st
+*
