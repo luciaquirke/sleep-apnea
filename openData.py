@@ -15,11 +15,11 @@ operatingSystem = 'macOS'
 if operatingSystem is 'linux' or 'macOS':
     dataPath = '/data/mit-bih-polysomnographic-database-1.0.0/'
     inputsPath = '/data/inputs/'
-    targetsPath = '/data/6-shot-targets/'
+    targetsPath = '/data/5-shot-targets/'
 else:
     dataPath = '\\data\\mit-bih-polysomnographic-database-1.0.0\\'
     inputsPath = '\\data\\inputs\\'
-    targetsPath = "\\data\\6-shot-targets\\"
+    targetsPath = "\\data\\5-shot-targets\\"
 
 recordList = wfdb.get_record_list('slpdb')
 

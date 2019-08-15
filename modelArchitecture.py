@@ -32,10 +32,10 @@ operatingSystem = 'macOS'
 
 if operatingSystem is 'linux' or 'macOS':
     inputsPath = '/data/inputs/'
-    targetsPath = '/data/6-shot-targets/'
+    targetsPath = '/data/5-shot-targets/'
 else:
     inputsPath = '\\data\\inputs\\'
-    targetsPath = '\\data\\6-shot-targets\\'
+    targetsPath = '\\data\\5-shot-targets\\'
 
 # load a list of files into a 3D array of [samples, timesteps, features]
 xLoaded = list()
@@ -56,6 +56,9 @@ X = np.stack(xLoaded, axis = 0)
 Y = yLoaded
 
 # Use to check the balance of classes in the data
+
+print(Y)
+
 ones = 0
 for event in Y:
     if event == 1:
