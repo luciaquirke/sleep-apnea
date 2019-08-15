@@ -5,3 +5,10 @@ data.zip
 *.xws
 *.hea
 *.st
+*.st-
+*.xml
+*.iml
+*.hea-
+*.txt
+*.ecg-
+*.shtml
