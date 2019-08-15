@@ -72,11 +72,11 @@ for recordNumber, record in enumerate(recordList):
 
     for epochIndex, epoch in enumerate(epochs):
         # save input and output arrays as csv files
-        with open(os.getcwd() + inputsPath + str(recordNumber) + '_' + str(epochIndex) + '.csv', 'w') as filehandler:
+        with open(os.getcwd() + inputsPath + str(recordNumber+1) + '_' + str(epochIndex+1) + '.csv', 'w') as filehandler:
             csvWriter = csv.writer(filehandler, delimiter=' ')
             csvWriter.writerows(epoch)
 
             # write target values to csv files, named by record number and epoch number
-        with open(os.getcwd() + targetsPath + str(recordNumber) + '_' + str(epochIndex) + ".csv", "w") as filehandler:
+        with open(os.getcwd() + targetsPath + str(recordNumber+1) + '_' + str(epochIndex+1) + ".csv", "w") as filehandler:
             csvWriter = csv.writer(filehandler, delimiter=' ')
             csvWriter.writerow(str(target[epochIndex, :]))
