@@ -79,4 +79,4 @@ for recordNumber, record in enumerate(recordList):
             # write target values to csv files, named by record number and epoch number
         with open(os.getcwd() + targetsPath + str(recordNumber) + '_' + str(epochIndex) + ".csv", "w") as filehandler:
             csvWriter = csv.writer(filehandler, delimiter=' ')
-            csvWriter.writerow(str(target[epochIndex, :])) # removed -1 from epochIndex
+            csvWriter.writerow(str(target[epochIndex, :]))
