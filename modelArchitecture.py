@@ -27,6 +27,18 @@ from keras.layers.normalization import BatchNormalization
 from keras.utils import to_categorical
 from keras.callbacks import EarlyStopping
 
+def load_file(filepath):
+    dataframe = pd.read_csv(filepath, header=None, delim_whitespace=True)
+    return dataframe.values
+
+
+def dPrime(y_true, y_pred):
+    matrix = confusion_matrix(y_true.argmax(axis=1), y_pred.argmax(axis=1))
+    tp, fn, fp, tn = matrix.ravel()
+    dPrime = norm.ppf(tp/(tp+fn)) - norm.ppf(tn/(tn+fp))
+    k.variable(dPrime)
+    return dPrime
+
 # change to current OS
 operatingSystem = 'macOS'
 
@@ -157,15 +169,3 @@ print(model.summary())
 # Save the model. Change the name depending on the date/model
 model.save('model_01_08_19_3.h5')
 print('Model Saved')
-
-
-def load_file(filepath):
-    dataframe = pd.read_csv(filepath, header=None, delim_whitespace=True)
-    return dataframe.values
-
-
-def dPrime(y_true, y_pred):
-    matrix = confusion_matrix(y_true.argmax(axis=1), y_pred.argmax(axis=1))
-    tp, fn, fp, tn = matrix.ravel()
-    dPrime = norm.ppf(tp/(tp+fn)) - norm.ppf(tn/(tn+fp))
-    return dPrime
