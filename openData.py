@@ -1,6 +1,7 @@
 # NOTES
 # print(annsamp.__dict__)        #can be used to list attributes and values of object
 # fs = sig.fs                    #can be used to find sampling rate of 250 Hz
+# most signals from c4-al of brain; several are taken at other locations
 
 import numpy as np
 import os
@@ -79,4 +80,4 @@ for recordNumber, record in enumerate(recordList):
             # write target values to csv files, named by record number and epoch number
         with open(os.getcwd() + targetsPath + str(recordNumber+1) + '_' + str(epochIndex+1) + ".csv", "w") as filehandler:
             csvWriter = csv.writer(filehandler, delimiter=' ')
-            csvWriter.writerow(str(target[epochIndex, :]))
+            csvWriter.writerow([str(target[epochIndex, :])])

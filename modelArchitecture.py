@@ -7,6 +7,7 @@ import keras.backend as k
 import seaborn as sn
 import matplotlib.pyplot as plt
 import h5py
+from collections import defaultdict
 
 from sklearn.model_selection import train_test_split
 from sklearn import preprocessing
@@ -27,8 +28,9 @@ from keras.layers.normalization import BatchNormalization
 from keras.utils import to_categorical
 from keras.callbacks import EarlyStopping
 
+
 def load_file(filepath):
-    dataframe = pd.read_csv(filepath, header=None, delim_whitespace=True)
+    dataframe = pd.read_csv(filepath, header=None, delimiter=' ')
     return dataframe.values
 
 
@@ -38,6 +40,7 @@ def dPrime(y_true, y_pred):
     dPrime = norm.ppf(tp/(tp+fn)) - norm.ppf(tn/(tn+fp))
     k.variable(dPrime)
     return dPrime
+
 
 # change to current OS
 operatingSystem = 'macOS'
@@ -69,14 +72,25 @@ Y = yLoaded
 
 # Use to check the balance of classes in the data
 
-print(Y)
+classes = defaultdict(lambda: 8, {
+    '01000': 0,
+    '00100': 1,
+    '00010': 2,
+    '00001': 3,
+    '11000': 4,
+    '10100': 5,
+    '10010': 6,
+    '10001': 7,
+    '00000': 'W'
+})
 
-ones = 0
+countClasses = [0]*7
+
 for event in Y:
-    if event == 1:
-        ones += 1
+    print(event)
+    countClasses(defaultdict[event])
 
-print(((ones/len(Y))*100), "%")
+#print(((ones/len(Y))*100), "%")
 
 Y = np.array(Y)
 
