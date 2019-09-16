@@ -28,24 +28,10 @@ from keras.layers.normalization import BatchNormalization
 from keras.utils import to_categorical
 from keras.callbacks import EarlyStopping
 
-
-def load_file(filepath):
-    dataframe = pd.read_csv(filepath, header=None, delimiter=' ')
-    return dataframe.values
-
-
-def dPrime(y_true, y_pred):
-    matrix = confusion_matrix(y_true.argmax(axis=1), y_pred.argmax(axis=1))
-    tp, fn, fp, tn = matrix.ravel()
-    dPrime = norm.ppf(tp/(tp+fn)) - norm.ppf(tn/(tn+fp))
-    k.variable(dPrime)
-    return dPrime
-
-
 # change to current OS
 operatingSystem = 'macOS'
 
-if operatingSystem is 'linux' or 'macOS':
+if operatingSystem is 'linux' or operatingSystem is 'macOS':
     inputsPath = '/data/inputs/'
     targetsPath = '/data/5-shot-targets/'
 else:
@@ -54,86 +40,82 @@ else:
 
 # load a list of files into a 3D array of [samples, timesteps, features]
 xLoaded = list()
-yLoaded = []
+yLoaded = list()
 
 print("Loading Data...")
 
 for root, dirs, files in os.walk('.' + inputsPath):
     for fileName in files:
-        xData = load_file(os.getcwd() + inputsPath + fileName)
-        xLoaded.append(xData)
-        yData = load_file(os.getcwd() + targetsPath + fileName)
-        yLoaded.append(yData)
+        # TODO: defs change this to something that works
+        try:
+            # print(fileName)
+            xData = open(os.getcwd() + inputsPath + fileName, 'r').readlines() # list of strings
+            for i in range(len(xData)):
+                xData[i] = xData[i].replace('\r', '')
+                xData[i] = xData[i].replace('\n', '')
+            xLoaded.append(xData) # list of lists, each inner list is 7500 values
+            yData = open(os.getcwd() + targetsPath + fileName, 'r').readlines()
+            yLoaded.append(yData)
+        except:
+            print("excepted" + fileName)
+            pass
 
-# stack group so that features are the 3rd dimension
-X = np.stack(xLoaded, axis = 0) 
-# Y is simply an array of data
-Y = yLoaded
+# check the balance of classes in the data
 
-# Use to check the balance of classes in the data
-
-classes = defaultdict(lambda: 8, {
-    '01000': 0,
-    '00100': 1,
-    '00010': 2,
-    '00001': 3,
-    '11000': 4,
-    '10100': 5,
-    '10010': 6,
-    '10001': 7,
-    '00000': 'W'
-})
-
-countClasses = [0]*7
-
-for event in Y:
-    print(event)
-    countClasses(defaultdict[event])
+# countClasses = [0]*7
+#
+# for event in Y:
+#     print(event)
+#     countClasses(defaultdict[event])
 
 #print(((ones/len(Y))*100), "%")
 
-Y = np.array(Y)
+X = np.arange(np.double(len(xLoaded))*np.double(7500)).reshape(len(xLoaded), 7500)
+Y = np.arange(np.double(len(yLoaded)))
+
+for i in range(len(xLoaded)):
+    try:
+        X[i] = np.array(xLoaded[i])
+        Y[i] = np.array(yLoaded[i])
+    except:
+        print('passed', np.array(xLoaded[i]))
+        print('passed', np.array(yLoaded[i]))
+        pass
 
 Y = to_categorical(Y)
-Y = Y.reshape(-1, 2)
 
 xShuffle, yShuffle = shuffle(X, Y, random_state=2)
 
-print(X.shape)
-print(Y.shape)
-
 xTrain, xTest, yTrain, yTest = train_test_split(xShuffle, yShuffle, test_size=0.2)
-
-print("Data Ready")
 
 verbose, epochs, batch_size = 1, 100, 32
 # CNN layers
 model = Sequential()
 
-model.add(Conv1D(filters=20, kernel_size=250, input_shape=(7500,1)))
+model.add(Conv1D(filters=20, kernel_size=125, input_shape=(7500, 1)))
 model.add(BatchNormalization())
 model.add(Activation('elu'))
 model.add(MaxPooling1D(pool_size=10))
-model.add(Dropout(0.5))
+model.add(Dropout(0.3))
 
-model.add(Conv1D(filters=40, kernel_size=75))
+model.add(Conv1D(filters=40, kernel_size=50))
 model.add(BatchNormalization())
 model.add(Activation('elu'))
 model.add(MaxPooling1D(pool_size=5))
-model.add(Dropout(0.5))
+model.add(Dropout(0.3))
 
 model.add(Conv1D(filters=60, kernel_size=10))
 model.add(BatchNormalization())
 model.add(Activation('elu'))
 model.add(MaxPooling1D(pool_size=5))
-model.add(Dropout(0.5))
+model.add(Dropout(0.3))
 
 model.add(Flatten())
 model.add(Dense(15, activation='elu')) 
-model.add(Dropout(0.5))
+model.add(Dropout(0.3))
 
-model.add(Dense(2, activation='softmax'))
-model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy', dPrime])
+model.add(Dense(9, activation='softmax'))
+model.compile(loss='categorical_crossentropy', optimizer='adam', metrics='accuracy')
 
 es = EarlyStopping(monitor='val_acc', mode='max', patience=2, verbose=1, restore_best_weights=True)
 

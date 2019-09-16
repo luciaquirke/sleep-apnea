@@ -13,7 +13,7 @@ from sklearn import preprocessing
 # change to current OS
 operatingSystem = 'macOS'
 
-if operatingSystem is 'linux' or 'macOS':
+if operatingSystem is 'linux' or operatingSystem is 'macOS':
     dataPath = '/data/mit-bih-polysomnographic-database-1.0.0/'
     inputsPath = '/data/inputs/'
     targetsPath = '/data/5-shot-targets/'
@@ -38,46 +38,49 @@ annotationDict = defaultdict(lambda: 5, {
     'R': 4
 })
 
-for recordNumber, record in enumerate(recordList):
+classes = defaultdict(lambda: '8', {
+    '01000': '0',
+    '00100': '1',
+    '00010': '2',
+    '00001': '3',
+    '11000': '4',
+    '10100': '5',
+    '10010': '6',
+    '10001': '7',
+    '00000': '8'
+})
 
-    # read the annotations
+for recordIndex, record in enumerate(recordList):
+
+    # read the annotations and data then create a record
     annsamp = wfdb.rdann(os.getcwd() + dataPath + record, extension='st', summarize_labels=True)
-
-    # read the data, create a Record
     sig = wfdb.rdrecord(os.getcwd() + dataPath + record, channels=[2])
     actualPSignal = sig.p_signal
-
-    # remove unannotated epochs from start of record
-    numberEpochs = len(actualPSignal) / 7500
-    numberAnnotations = len(annsamp.aux_note)
-
-    if numberEpochs != numberAnnotations:
-        startingIndex = int(numberEpochs - numberAnnotations)
-        actualPSignal = actualPSignal[startingIndex * 7500:]
-
-    # standardise signal
     actualPSignal = preprocessing.scale(actualPSignal)
 
-    # 5 shot classification target: first digit is apnea, next four are N1, N2, N3, and REM
-    target = np.zeros((numberAnnotations, 5)).astype(int)
+    # remove unannotated epochs from start of record and split into epochs
+    numberAnnotations = len(annsamp.aux_note)
+    startingIndex = int((len(actualPSignal) / 7500) - numberAnnotations)*7500
+    actualPSignal = actualPSignal[startingIndex:]
+    epochs = np.split(actualPSignal, numberAnnotations)
 
-    for i, note in enumerate(annsamp.aux_note):
-        labels = note.split(' ')
+    # 5 shot classification target: first digit is apnea, next four are N1, N2, N3, and REM
+    target = [[0]*5 for _ in range(numberAnnotations)]
+
+    # annotate each epoch and write its data and annotation to separate files
+    for annotationIndex in range(numberAnnotations):
+        labels = annsamp.aux_note[annotationIndex].split(' ')
         for label in labels:
             if annotationDict[label] is not 5:
-                target[i, annotationDict[label]] = 1
+                target[annotationIndex][annotationDict[label]] = 1
 
-    # write each epoch to a csv file, named by record number and epoch number
-    trimmedNumberEpochs = len(actualPSignal) / 7500
-    epochs = np.split(actualPSignal, trimmedNumberEpochs)
+        # write each epoch to a csv file, named by record number and epoch number
+        with open(os.getcwd() + inputsPath + str(recordIndex + 1) + '_' + str(annotationIndex + 1) + '.csv', 'w') as fileHandler:
+            csvWriter = csv.writer(fileHandler, delimiter=' ')
+            csvWriter.writerows(epochs[annotationIndex])
 
-    for epochIndex, epoch in enumerate(epochs):
-        # save input and output arrays as csv files
-        with open(os.getcwd() + inputsPath + str(recordNumber+1) + '_' + str(epochIndex+1) + '.csv', 'w') as filehandler:
-            csvWriter = csv.writer(filehandler, delimiter=' ')
-            csvWriter.writerows(epoch)
-
-            # write target values to csv files, named by record number and epoch number
-        with open(os.getcwd() + targetsPath + str(recordNumber+1) + '_' + str(epochIndex+1) + ".csv", "w") as filehandler:
-            csvWriter = csv.writer(filehandler, delimiter=' ')
-            csvWriter.writerow([str(target[epochIndex, :])])
+        # write each target value to a csv file, named by record number and epoch number
+        with open(os.getcwd() + targetsPath + str(recordIndex + 1) + '_' + str(annotationIndex + 1) + ".csv", "w") as fileHandler:
+            eventClass = ''.join([str(v) for v in target[annotationIndex]])
+            eventClass = classes[eventClass]
+            fileHandler.write(eventClass)
