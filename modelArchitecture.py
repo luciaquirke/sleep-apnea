@@ -1,13 +1,8 @@
 import numpy as np
-import pandas as pd
 import os
-import sklearn
-import keras
-import keras.backend as k
-import seaborn as sn
+from glob import glob
 import matplotlib.pyplot as plt
 import h5py
-from collections import defaultdict
 
 from sklearn.model_selection import train_test_split
 from sklearn import preprocessing
@@ -17,6 +12,7 @@ from sklearn.metrics import classification_report
 
 from scipy.stats import norm
 
+import keras
 from keras.models import Sequential
 from keras.layers import Dense
 from keras.layers import Flatten
@@ -28,37 +24,17 @@ from keras.layers.normalization import BatchNormalization
 from keras.utils import to_categorical
 from keras.callbacks import EarlyStopping
 
-# change to current OS
-operatingSystem = 'macOS'
+from dataGenerator import DataGenerator
 
-if operatingSystem is 'linux' or operatingSystem is 'macOS':
-    inputsPath = '/data/inputs/'
-    targetsPath = '/data/5-shot-targets/'
-else:
-    inputsPath = '\\data\\inputs\\'
-    targetsPath = '\\data\\5-shot-targets\\'
-
-# load a list of files into a 3D array of [samples, timesteps, features]
-xLoaded = list()
-yLoaded = list()
+inputsPath = 'data/inputs/'
+targetsPath = 'data/5-shot-targets/'
 
 print("Loading Data...")
 
-for root, dirs, files in os.walk('.' + inputsPath):
-    for fileName in files:
-        # TODO: defs change this to something that works
-        try:
-            # print(fileName)
-            xData = open(os.getcwd() + inputsPath + fileName, 'r').readlines() # list of strings
-            for i in range(len(xData)):
-                xData[i] = xData[i].replace('\r', '')
-                xData[i] = xData[i].replace('\n', '')
-            xLoaded.append(xData) # list of lists, each inner list is 7500 values
-            yData = open(os.getcwd() + targetsPath + fileName, 'r').readlines()
-            yLoaded.append(yData)
-        except:
-            print("excepted" + fileName)
-            pass
+files = list(glob(os.path.join(inputsPath, "**", "*.csv"), recursive=True))
+files = [os.path.basename(filename) for filename in files]
+
+print("{:} data-points found".format(len(files)))
 
 # check the balance of classes in the data
 
@@ -70,25 +46,15 @@ for root, dirs, files in os.walk('.' + inputsPath):
 
 #print(((ones/len(Y))*100), "%")
 
-X = np.arange(np.double(len(xLoaded))*np.double(7500)).reshape(len(xLoaded), 7500)
-Y = np.arange(np.double(len(yLoaded)))
+trainFiles, testFiles = train_test_split(files, test_size=0.2)
+trainFiles, validationFiles = train_test_split(trainFiles, test_size=0.1)
 
-for i in range(len(xLoaded)):
-    try:
-        X[i] = np.array(xLoaded[i])
-        Y[i] = np.array(yLoaded[i])
-    except:
-        print('passed', np.array(xLoaded[i]))
-        print('passed', np.array(yLoaded[i]))
-        pass
+# generates training/test/validation data in batches
+trainGenerator = DataGenerator(inputsPath, targetsPath, trainFiles)
+validationGenerator = DataGenerator(inputsPath, targetsPath, validationFiles)
+testGenerator = DataGenerator(inputsPath, targetsPath, testFiles)
 
-Y = to_categorical(Y)
-
-xShuffle, yShuffle = shuffle(X, Y, random_state=2)
-
-xTrain, xTest, yTrain, yTest = train_test_split(xShuffle, yShuffle, test_size=0.2)
-
-verbose, epochs, batch_size = 1, 100, 32
+verbose, epochs = 1, 100
 # CNN layers
 model = Sequential()
 
@@ -115,14 +81,25 @@ model.add(Dense(15, activation='elu'))
 model.add(Dropout(0.3))
 
 model.add(Dense(9, activation='softmax'))
-model.compile(loss='categorical_crossentropy', optimizer='adam', metrics='accuracy')
+model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
 
 es = EarlyStopping(monitor='val_acc', mode='max', patience=2, verbose=1, restore_best_weights=True)
 
-history = model.fit(xTrain, yTrain, epochs=epochs, batch_size=batch_size, verbose=verbose, validation_split=0.1,
-                    callbacks=[es])
-_, accuracy = model.evaluate(xTest, yTest, batch_size=batch_size, verbose=0)
-yPred = model.predict(xTest)
+history = model.fit_generator(trainGenerator, validation_data=validationGenerator, epochs=epochs, verbose=verbose, callbacks=[es])
+_, accuracy = model.evaluate_generator(testGenerator, verbose=0)
+
+xTest = []
+yTest = []
+testGenerator.on_epoch_end()
+for i in range(len(testGenerator)):
+    xBatch, yBatch = testGenerator[i]
+    xTest.extend(xBatch)
+    yTest.extend(yBatch)
+
+xTest = np.array(xTest)
+yTest = np.array(yTest)
+
+yPred = model.predict_generator(xTest, steps=32)
 
 # Calculate accuracy as a percentage
 accuracy = accuracy * 100.0

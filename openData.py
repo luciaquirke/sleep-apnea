@@ -75,12 +75,13 @@ for recordIndex, record in enumerate(recordList):
                 target[annotationIndex][annotationDict[label]] = 1
 
         # write each epoch to a csv file, named by record number and epoch number
-        with open(os.getcwd() + inputsPath + str(recordIndex + 1) + '_' + str(annotationIndex + 1) + '.csv', 'w') as fileHandler:
-            csvWriter = csv.writer(fileHandler, delimiter=' ')
-            csvWriter.writerows(epochs[annotationIndex])
+        with open(os.getcwd() + inputsPath + str(recordIndex) + '_' + str(annotationIndex) + '.csv',
+                  'w') as filehandler:
+            filehandler.write("\n".join(str(num) for num in epochs[annotationIndex]))
 
-        # write each target value to a csv file, named by record number and epoch number
-        with open(os.getcwd() + targetsPath + str(recordIndex + 1) + '_' + str(annotationIndex + 1) + ".csv", "w") as fileHandler:
+        with open(os.getcwd() + targetsPath + str(recordIndex) + '_' + str(annotationIndex) + ".csv", "w") as fileHandler:
             eventClass = ''.join([str(v) for v in target[annotationIndex]])
             eventClass = classes[eventClass]
             fileHandler.write(eventClass)
+
+    print("\r {:2d}/{:2d}".format(recordIndex + 1, len(recordList)), end=" ")
