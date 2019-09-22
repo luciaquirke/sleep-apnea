@@ -58,6 +58,10 @@ class DataGenerator(keras.utils.Sequence):
 
         xLoaded = np.array(xLoaded)
         xLoaded = xLoaded[..., np.newaxis]
+        if xLoaded.shape == (32, 1):
+            print("generation failed - wrong shape")
+            print(filename)
+            print(len(np.array(xData)))
 
         yLoaded = np.array(yLoaded)
         yLoaded = to_categorical(yLoaded)

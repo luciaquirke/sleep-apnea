@@ -24,30 +24,38 @@ else:
 
 recordList = wfdb.get_record_list('slpdb')
 
-annotationDict = defaultdict(lambda: 5, {
-    'H': 0,
-    'HA': 0,
-    'OA': 0,
-    'CA': 0,
-    'CAA': 0,
-    'X': 0,
-    '1': 1,
-    '2': 2,
-    '3': 3,
-    '4': 3,
-    'R': 4
+annotationDict = defaultdict(lambda: 4, {
+    # 'H': 0,
+    # 'HA': 0,
+    # 'OA': 0,
+    # 'CA': 0,
+    # 'CAA': 0,
+    # 'X': 0,
+    '1': 0,
+    '2': 1,
+    '3': 2,
+    '4': 2,
+    'R': 3
 })
 
-classes = defaultdict(lambda: '8', {
-    '01000': '0',
-    '00100': '1',
-    '00010': '2',
-    '00001': '3',
-    '11000': '4',
-    '10100': '5',
-    '10010': '6',
-    '10001': '7',
-    '00000': '8'
+# classes = defaultdict(lambda: '8', { # 9 shot
+#     '01000': '0',
+#     '00100': '1',
+#     '00010': '2',
+#     '00001': '3',
+#     '11000': '4',
+#     '10100': '5',
+#     '10010': '6',
+#     '10001': '7',
+#     '00000': '8'
+# })
+
+classes = defaultdict(lambda: '6', {
+    '1000': '1',
+    '0100': '2',
+    '0010': '3',
+    '0001': '4',
+    '0000': '5'
 })
 
 for recordIndex, record in enumerate(recordList):
@@ -64,20 +72,15 @@ for recordIndex, record in enumerate(recordList):
     actualPSignal = actualPSignal[startingIndex:]
     epochs = np.split(actualPSignal, numberAnnotations)
 
-    # 5 shot classification target: first digit is apnea, next four are N1, N2, N3, and REM
-    target = [[0]*5 for _ in range(numberAnnotations)]
+    # 5 shot classification target: N1, N2, N3, REM, and wake
+    target = [[0]*4 for _ in range(numberAnnotations)]
 
     # annotate each epoch and write its data and annotation to separate files
     for annotationIndex in range(numberAnnotations):
         labels = annsamp.aux_note[annotationIndex].split(' ')
         for label in labels:
-            if annotationDict[label] is not 5:
+            if annotationDict[label] is not 4:
                 target[annotationIndex][annotationDict[label]] = 1
-
-        # write each epoch to a csv file, named by record number and epoch number
-        with open(os.getcwd() + inputsPath + str(recordIndex) + '_' + str(annotationIndex) + '.csv',
-                  'w') as filehandler:
-            filehandler.write("\n".join(str(num) for num in epochs[annotationIndex]))
 
         with open(os.getcwd() + targetsPath + str(recordIndex) + '_' + str(annotationIndex) + ".csv", "w") as fileHandler:
             eventClass = ''.join([str(v) for v in target[annotationIndex]])

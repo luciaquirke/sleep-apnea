@@ -1,8 +1,10 @@
 import numpy as np
 import os
+import datetime
 from glob import glob
 import matplotlib.pyplot as plt
 import h5py
+
 
 from sklearn.model_selection import train_test_split
 from sklearn import preprocessing
@@ -35,16 +37,6 @@ files = list(glob(os.path.join(inputsPath, "**", "*.csv"), recursive=True))
 files = [os.path.basename(filename) for filename in files]
 
 print("{:} data-points found".format(len(files)))
-
-# check the balance of classes in the data
-
-# countClasses = [0]*7
-#
-# for event in Y:
-#     print(event)
-#     countClasses(defaultdict[event])
-
-#print(((ones/len(Y))*100), "%")
 
 trainFiles, testFiles = train_test_split(files, test_size=0.2)
 trainFiles, validationFiles = train_test_split(trainFiles, test_size=0.1)
@@ -80,7 +72,7 @@ model.add(Flatten())
 model.add(Dense(15, activation='elu')) 
 model.add(Dropout(0.3))
 
-model.add(Dense(9, activation='softmax'))
+model.add(Dense(6, activation='softmax'))
 model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
 
 es = EarlyStopping(monitor='val_acc', mode='max', patience=2, verbose=1, restore_best_weights=True)
@@ -116,8 +108,10 @@ print(np.matrix(matrix))
 # print('dPrime =', dprime)
 
 # Generate classification report
-target_names = ['non-apnea 1', 'non-apnea 2', 'non-apnea 3', 'non-apnea REM', 'apnea 1', 'apnea 2', 'apnea 3',
-                'apnea REM', 'awake']
+# target_names = ['non-apnea 1', 'non-apnea 2', 'non-apnea 3', 'non-apnea REM', 'apnea 1', 'apnea 2', 'apnea 3',
+                # 'apnea REM', 'awake']
+
+target_names = ['1', '2', '3', 'REM', 'awake']
 print('Classification Report:')
 print(classification_report(yTest.argmax(axis=1), yPred.argmax(axis=1), target_names=target_names))
 
@@ -141,5 +135,8 @@ plt.show()
 print(model.summary())
 
 # Save the model. Change the name depending on the date/model
-model.save('model_01_08_19_3.h5')
+
+now = datetime.datetime.now()
+title = now.strftime("%Y-%m-%d_%H%M")
+model.save('model_' + title)
 print('Model Saved')
