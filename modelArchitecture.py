@@ -99,7 +99,7 @@ for i in range(len(testGenerator)):
 xTest = np.array(xTest)
 yTest = np.array(yTest)
 
-yPred = model.predict_generator(xTest, steps=32)
+yPred = model.predict(xTest)
 
 # Calculate accuracy as a percentage
 accuracy = accuracy * 100.0
@@ -110,13 +110,14 @@ matrix = confusion_matrix(yTest.argmax(axis=1), yPred.argmax(axis=1))
 print('Confusion Matrix:')
 print(np.matrix(matrix))
 
-# Calculate d' from testing
-tp, fn, fp, tn = matrix.ravel()
-dprime = norm.ppf(tp/(tp+fn)) - norm.ppf(tn/(tn+fp))
-print('dPrime =', dprime)
+# # Calculate d' from testing
+# tp, fn, fp, tn = matrix.ravel()
+# dprime = norm.ppf(tp/(tp+fn)) - norm.ppf(tn/(tn+fp))
+# print('dPrime =', dprime)
 
 # Generate classification report
-target_names = ['non-apnea', 'apnea']
+target_names = ['non-apnea 1', 'non-apnea 2', 'non-apnea 3', 'non-apnea REM', 'apnea 1', 'apnea 2', 'apnea 3',
+                'apnea REM', 'awake']
 print('Classification Report:')
 print(classification_report(yTest.argmax(axis=1), yPred.argmax(axis=1), target_names=target_names))
 
