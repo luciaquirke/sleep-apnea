@@ -1,11 +1,10 @@
 import numpy as np
 import os
-from glob import glob
 import matplotlib.pyplot as plt
 
 
 def main():
-    """Plots the input data specified in filename variable and prints its target data"""
+    """Plots the input data specified in the filename variable and prints its target data"""
     inputsPath = 'data/inputs/'
     targetsPath = 'data/targets/'
 

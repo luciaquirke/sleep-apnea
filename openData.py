@@ -1,8 +1,3 @@
-# NOTES
-# print(annsamp.__dict__)        #can be used to list attributes and values of object
-# fs = sig.fs                    #can be used to find sampling rate of 250 Hz
-# most signals from c4-al of brain; several are taken at other locations
-
 import numpy as np
 import os
 import wfdb
@@ -10,21 +5,11 @@ from collections import defaultdict
 from sklearn import preprocessing
 
 def main():
-    """loads relevant data from PhysioBank using wfdb package specified in documentation and saves it to folders"""
-    # change this variable to macOS, linux, or windows
+    """Loads relevant data from PhysioBank using wfdb package specified in documentation and saves it to folders"""
+    # change this variable to 'macOS', 'linux', or 'windows'
     operating_system = 'macOS'
-    inputs_path, targets_path, data_path = folder_management(operating_system)
-
-
-    record_list = wfdb.get_record_list('slpdb')
 
     annotation_dict = defaultdict(lambda: 5, {
-        # 'H': 4, # positive sleep apnoea labels
-        # 'HA': 4,
-        # 'OA': 4,
-        # 'CA': 4,
-        # 'CAA': 4,
-        # 'X': 4,
         '1': 0,
         '2': 1,
         '3': 2,
@@ -47,6 +32,9 @@ def main():
         '0001': 0,
         '0000': 0
     })
+
+    inputs_path, targets_path, data_path = folder_management(operating_system)
+    record_list = wfdb.get_record_list('slpdb')
 
     for record_index, record in enumerate(record_list):
 
@@ -94,17 +82,20 @@ def main():
 
 
 def folder_management(OS):
+    """Specifies the folder structures and pathways, creating any missing folders"""
     if OS is 'linux' or OS is 'macOS':
         data_path = '/data/mit-bih-polysomnographic-database-1.0.0/'
         inputs_path = '/data/inputs/'
         targets_path = '/data/5-shot-targets/'
+        top_folder = '/data'
     else:
         data_path = '\\data\\mit-bih-polysomnographic-database-1.0.0\\'
         inputs_path = '\\data\\inputs\\'
         targets_path = "\\data\\5-shot-targets\\"
+        top_folder = '\\data'
 
-    if not os.path.isdir('./data'):
-        os.mkdir('./data')
+    if not os.path.isdir('.' + top_folder):
+        os.mkdir('.' + top_folder)
     if not os.path.isdir('.' + data_path):
         os.mkdir('.' + data_path)
         print("ensure database downloaded and in working directory in data_path folder")
@@ -113,6 +104,7 @@ def folder_management(OS):
         os.mkdir('.' + targets_path)
 
     return inputs_path, targets_path, data_path
+
 
 # starts main if file called as script (rather than imported)
 if __name__ == "__main__":
