@@ -1,4 +1,6 @@
 data.zip
+env*
+data/*/*
 *.csv
 *.dat
 *.ecg
@@ -9,6 +11,6 @@ data.zip
 *.xml
 *.iml
 *.hea-
-*.txt
 *.ecg-
 *.shtml
+
