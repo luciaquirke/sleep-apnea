@@ -4,6 +4,7 @@ from pathlib import Path
 import wfdb
 from collections import defaultdict
 from sklearn import preprocessing
+from typing import Tuple
 
 def main() -> None:
     """Loads relevant data from PhysioBank using wfdb package specified in documentation and saves it to folders"""
