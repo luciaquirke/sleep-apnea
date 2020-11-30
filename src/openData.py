@@ -4,7 +4,7 @@ import wfdb
 from collections import defaultdict
 from sklearn import preprocessing
 
-def main():
+def main() -> None:
     """Loads relevant data from PhysioBank using wfdb package specified in documentation and saves it to folders"""
     # change this variable to 'macOS', 'linux', or 'windows'
     operating_system = 'macOS'
@@ -33,7 +33,7 @@ def main():
         '0000': 0
     })
 
-    inputs_path, targets_path, data_path = folder_management(operating_system)
+    inputs_path, targets_path, data_path = folder_setup()
     record_list = wfdb.get_record_list('slpdb')
 
     for record_index, record in enumerate(record_list):
@@ -81,7 +81,7 @@ def main():
         print(key, value)
 
 
-def folder_management(OS):
+def folder_setup() -> Tuple[str, str, str]:
     """Specifies the folder structures and pathways, creating any missing folders"""
     if OS is 'linux' or OS is 'macOS':
         data_path = '/data/mit-bih-polysomnographic-database-1.0.0/'
