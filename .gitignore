@@ -1,6 +1,7 @@
 data.zip
 env*
 data/*/*
+.python-version
 .vscode*
 *.csv
 *.dat

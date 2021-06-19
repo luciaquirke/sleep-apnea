@@ -1,0 +1,1 @@
+wget -r -N -c -np -P ./data/ https://physionet.org/files/slpdb/1.0.0/
