@@ -57,6 +57,8 @@ def main():
         _, accuracy = model.evaluate_generator(test_generator, verbose=0)
 
         # saves the model, named by time/date
+        now = datetime.datetime.now()
+        title = now.strftime("%Y-%m-%d_%H%M-%S")
         model.save('model_' + title)
         print('Model Saved')
 
