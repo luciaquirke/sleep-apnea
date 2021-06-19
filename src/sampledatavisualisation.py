@@ -13,9 +13,11 @@ def main():
 
     filename = '9_427.csv'
 
-    xData = open(os.path.join(os.getcwd(), inputsPath, filename), 'r').readlines()
+    xData = open(os.path.join(
+        os.getcwd(), inputsPath, filename), 'r').readlines()
     xLoaded.append([float(item.strip('[]\r\n')) for item in xData])
-    yData = open(os.path.join(os.getcwd(), targetsPath, filename), 'r').readlines()
+    yData = open(os.path.join(
+        os.getcwd(), targetsPath, filename), 'r').readlines()
     yLoaded.append(yData)
 
     print(xLoaded[0])

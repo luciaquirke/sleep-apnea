@@ -47,3 +47,6 @@ urllib3==1.26.5
 Werkzeug==1.0.1
 wfdb==3.1.1
 wrapt==1.12.1
+seaborn==0.11.1
+keras==2.3.2
+pyyaml==5.4.1

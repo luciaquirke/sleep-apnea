@@ -18,7 +18,7 @@ from keras.layers.convolutional import MaxPooling1D
 from keras.layers.normalization import BatchNormalization
 from keras.callbacks import EarlyStopping
 
-from dataGenerator import DataGenerator
+from datagenerator import DataGenerator
 
 
 def main(inputs_path='data/inputs/', targets_path='data/5-shot-targets/', save_confusion=True):
@@ -29,17 +29,20 @@ def main(inputs_path='data/inputs/', targets_path='data/5-shot-targets/', save_c
 
     model = define_model()
 
-    train_files, test_files, validation_files = get_input_file_names(inputs_path)
+    train_files, test_files, validation_files = get_input_file_names(
+        inputs_path)
 
     # generate training/test/validation data in batches
     train_generator = DataGenerator(inputs_path, targets_path, train_files)
-    validation_generator = DataGenerator(inputs_path, targets_path, validation_files)
+    validation_generator = DataGenerator(
+        inputs_path, targets_path, validation_files)
     test_generator = DataGenerator(inputs_path, targets_path, test_files)
 
     # run model training and evaluation
-    es = EarlyStopping(monitor='val_acc', mode='max', patience=5, verbose=1, restore_best_weights=True)
+    es = EarlyStopping(monitor='val_acc', mode='max',
+                       patience=5, verbose=1, restore_best_weights=True)
     history = model.fit_generator(train_generator, validation_data=validation_generator, epochs=100, verbose=1,
-                                       callbacks=[es])
+                                  callbacks=[es])
     _, accuracy = model.evaluate_generator(test_generator, verbose=0)
 
     # create test set and targets
@@ -55,7 +58,8 @@ def main(inputs_path='data/inputs/', targets_path='data/5-shot-targets/', save_c
 
     save_model(model)
 
-    evaluate_model(model, history, accuracy, y_test, y_prediction, save_confusion)
+    evaluate_model(model, history, accuracy, y_test,
+                   y_prediction, save_confusion)
 
     return None
 
@@ -64,13 +68,15 @@ def get_input_file_names(inputs_path):
     """"Generates separate lists of train, test, and validation file names from files in specified file paths"""
     print("Loading Data...")
 
-    files = list(glob(os.path.join(inputs_path, "**", "*.csv"), recursive=True))
+    files = list(
+        glob(os.path.join(inputs_path, "**", "*.csv"), recursive=True))
     files = [os.path.basename(filename) for filename in files]
 
     print("{:} data-points found".format(len(files)))
 
     train_file_names, test_file_names = train_test_split(files, test_size=0.2)
-    train_file_names, validation_file_names = train_test_split(train_file_names, test_size=0.1)
+    train_file_names, validation_file_names = train_test_split(
+        train_file_names, test_size=0.1)
 
     return train_file_names, test_file_names, validation_file_names
 
@@ -108,7 +114,8 @@ def define_model():
     model.add(Dropout(0.3))
 
     model.add(Dense(6, activation='softmax'))
-    model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
+    model.compile(loss='categorical_crossentropy',
+                  optimizer='adam', metrics=['accuracy'])
 
     return model
 
@@ -131,7 +138,8 @@ def evaluate_model(model, history, accuracy, y_test, y_prediction, save_confusio
     print('Accuracy =', percent_accuracy, "%")
 
     # print confusion matrix
-    matrix = confusion_matrix(y_test.argmax(axis=1), y_prediction.argmax(axis=1))
+    matrix = confusion_matrix(y_test.argmax(
+        axis=1), y_prediction.argmax(axis=1))
     print('Confusion Matrix:')
     print(np.matrix(matrix))
 
@@ -140,13 +148,15 @@ def evaluate_model(model, history, accuracy, y_test, y_prediction, save_confusio
         squeezed_confusion_matrix = np.squeeze(np.asarray(matrix))
         now = datetime.datetime.now()
         title = now.strftime("%Y-%m-%d_%H%M-%S")
-        np.savetxt(title + '.csv', squeezed_confusion_matrix, delimiter=',', fmt='%d')
+        np.savetxt(title + '.csv', squeezed_confusion_matrix,
+                   delimiter=',', fmt='%d')
         print("Confusion matrix saved to working directory")
 
     # print classification report
     target_names = ['1', '2', '3', 'REM', 'awake']
     print('Classification Report:')
-    print(classification_report(y_test.argmax(axis=1), y_prediction.argmax(axis=1), target_names=target_names))
+    print(classification_report(y_test.argmax(axis=1),
+          y_prediction.argmax(axis=1), target_names=target_names))
 
     acc = history.history['acc']
     loss = history.history['loss']
@@ -173,10 +183,3 @@ def evaluate_model(model, history, accuracy, y_test, y_prediction, save_confusio
 # starts main if file called as script (rather than imported)
 if __name__ == "__main__":
     main()
-
-
-
-
-
-
-

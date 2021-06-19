@@ -7,15 +7,16 @@ from sklearn.model_selection import KFold
 
 from keras.callbacks import EarlyStopping
 
-from foldGenerator import FoldGenerator
-from modelArchitecture import define_model
+from foldgenerator import FoldGenerator
+from modelarchitecture import define_model
 
 
 def get_input_filenames(inputs_file_path):
     """Returns list of data filenames by recursive search of inputs path"""
     print("Loading Data...")
 
-    files = list(glob(os.path.join(inputs_file_path, "**", "*.csv"), recursive=True))
+    files = list(
+        glob(os.path.join(inputs_file_path, "**", "*.csv"), recursive=True))
     files = [os.path.basename(filename) for filename in files]
 
     print("{:} data-points found".format(len(files)))
@@ -38,15 +39,19 @@ def main():
         train_index = train_index[917:-1]
 
         # generates training/test/validation data in batches
-        train_generator = FoldGenerator(inputs_path, targets_path, files[train_index[0]:train_index[-1]])
-        validation_generator = FoldGenerator(inputs_path, targets_path, files[validation_index[0]:validation_index[-1]])
-        test_generator = FoldGenerator(inputs_path, targets_path, files[test_index[0]:test_index[-1]])
+        train_generator = FoldGenerator(
+            inputs_path, targets_path, files[train_index[0]:train_index[-1]])
+        validation_generator = FoldGenerator(
+            inputs_path, targets_path, files[validation_index[0]:validation_index[-1]])
+        test_generator = FoldGenerator(
+            inputs_path, targets_path, files[test_index[0]:test_index[-1]])
 
         # defines model architecture and set training parameters
         model = define_model()
 
         # model training
-        es = EarlyStopping(monitor='val_acc', mode='max', patience=5, verbose=1, restore_best_weights=True)
+        es = EarlyStopping(monitor='val_acc', mode='max',
+                           patience=5, verbose=1, restore_best_weights=True)
         history = model.fit_generator(train_generator, validation_data=validation_generator, epochs=100, verbose=1,
                                       callbacks=[es])
         _, accuracy = model.evaluate_generator(test_generator, verbose=0)
@@ -78,7 +83,8 @@ def main():
         squeezed_confusion_matrix = np.squeeze(np.asarray(matrix))
         now = datetime.datetime.now()
         title = now.strftime("%Y-%m-%d_%H%M-%S")
-        np.savetxt(title + '.csv', squeezed_confusion_matrix, delimiter=',', fmt='%d')
+        np.savetxt(title + '.csv', squeezed_confusion_matrix,
+                   delimiter=',', fmt='%d')
         print('Confusion matrix saved to working directory')
 
         return None
@@ -87,5 +93,3 @@ def main():
 # starts main if file called as script (rather than imported)
 if __name__ == "__main__":
     main()
-
-
