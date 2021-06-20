@@ -18,14 +18,17 @@ from keras.layers.convolutional import MaxPooling1D
 from keras.layers.normalization import BatchNormalization
 from keras.callbacks import EarlyStopping
 
-from datagenerator import DataGenerator
+from .datagenerator import DataGenerator
+from ..utils.utils import setup_directory
 
 
-def main(inputs_path='data/inputs/', targets_path='data/5-shot-targets/', save_confusion=True):
+def main(save_confusion=True):
     """Convolutional Neural Network Creation and Evaluation. Uses data collected from the Physiobank data set and stored
     in the specified input and target folders"""
 
     print("Running...")
+
+    inputs_path, targets_path, _ = setup_directory()
 
     model = define_model()
 

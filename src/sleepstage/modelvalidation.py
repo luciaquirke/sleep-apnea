@@ -7,16 +7,17 @@ from sklearn.model_selection import KFold
 
 from keras.callbacks import EarlyStopping
 
-from foldgenerator import FoldGenerator
-from modelarchitecture import define_model
+from .foldgenerator import FoldGenerator
+from .modelarchitecture import define_model
+from ..utils.utils import setup_directory
 
 
-def get_input_filenames(inputs_file_path):
+def get_input_filenames(inputs_path):
     """Returns list of data filenames by recursive search of inputs path"""
     print("Loading Data...")
 
     files = list(
-        glob(os.path.join(inputs_file_path, "**", "*.csv"), recursive=True))
+        glob(os.path.join(inputs_path, "**", "*.csv"), recursive=True))
     files = [os.path.basename(filename) for filename in files]
 
     print("{:} data-points found".format(len(files)))
@@ -26,8 +27,7 @@ def get_input_filenames(inputs_file_path):
 
 def main():
     """Runs model training with 10-fold data and saves model and confusion matrices"""
-    inputs_path = 'data/inputs/'
-    targets_path = 'data/5-shot-targets/'
+    inputs_path, targets_path, _ = setup_directory()
     files = get_input_filenames(inputs_path)
 
     cv = KFold(n_splits=10, shuffle=True, random_state=3)

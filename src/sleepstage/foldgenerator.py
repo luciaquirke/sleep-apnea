@@ -4,12 +4,13 @@ import keras
 from keras.utils import to_categorical
 
 
-class DataGenerator(keras.utils.Sequence):
+class FoldGenerator(keras.utils.Sequence):
     'Generates data for Keras'
-    def __init__(self, inputsPath, targetsPath, filenames, batch_size=32, shuffle=True):
+
+    def __init__(self, inputs_path, targets_path, filenames, batch_size=32, shuffle=True):
         'Initialization'
-        self.inputsPath = inputsPath
-        self.targetsPath = targetsPath
+        self.inputs_path = inputs_path
+        self.targets_path = targets_path
         self.filenames = filenames
         self.batch_size = batch_size
         self.shuffle = shuffle
@@ -22,7 +23,8 @@ class DataGenerator(keras.utils.Sequence):
     def __getitem__(self, batch_num):
         'Generate one batch of data'
         # Generate indexes of the batch
-        next_batch_indices = self.indices[batch_num*self.batch_size:(batch_num+1)*self.batch_size]
+        next_batch_indices = self.indices[batch_num *
+                                          self.batch_size:(batch_num+1)*self.batch_size]
 
         # Find list of IDs
         next_batch_filenames = [self.filenames[i] for i in next_batch_indices]
@@ -40,29 +42,31 @@ class DataGenerator(keras.utils.Sequence):
 
     def __data_generation(self, filenames):
         'Generates data containing batch_size samples'
-        xLoaded = []
-        yLoaded = []
+        x_loaded = []
+        y_loaded = []
 
         for filename in filenames:
-            xData = open(os.path.join(os.getcwd(), self.inputsPath, filename), 'r').readlines()
-            xLoaded.append([float(item.strip('[]\r\n')) for item in xData])
+            x_data = open(os.path.join(
+                os.getcwd(), self.inputs_path, filename), 'r').readlines()
+            x_loaded.append([float(item.strip('[]\r\n')) for item in x_data])
 
-            if len(xData) != 7500:
+            if len(x_data) != 7500:
                 print("bad data")
-                print(xData)
+                print(x_data)
                 print(filename)
 
-            yData = open(os.path.join(os.getcwd(), self.targetsPath, filename), 'r').readlines()
-            yLoaded.append(yData)
+            y_data = open(os.path.join(
+                os.getcwd(), self.targets_path, filename), 'r').readlines()
+            y_loaded.append(y_data)
 
-        xLoaded = np.array(xLoaded)
-        xLoaded = xLoaded[..., np.newaxis]
-        if xLoaded.shape == (32, 1):
+        x_loaded = np.array(x_loaded)
+        x_loaded = x_loaded[..., np.newaxis]
+        if x_loaded.shape == (32, 1):
             print("generation failed - wrong shape")
             print(filename)
-            print(len(np.array(xData)))
+            print(len(np.array(x_data)))
 
-        yLoaded = np.array(yLoaded)
-        yLoaded = to_categorical(yLoaded)
+        y_loaded = np.array(y_loaded)
+        y_loaded = to_categorical(y_loaded)
 
-        return xLoaded, yLoaded
+        return x_loaded, y_loaded

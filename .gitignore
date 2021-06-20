@@ -2,6 +2,8 @@ data.zip
 env*
 data/*/*
 .python-version
+**/__pycache__/**
+.DS_Store
 .vscode*
 *.csv
 *.dat
