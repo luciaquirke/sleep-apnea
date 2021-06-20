@@ -4,8 +4,6 @@ import pandas as pd
 import seaborn as sn
 from scipy.fftpack import fft
 from keras.models import load_model
-from keras.utils.vis_utils import plot_model
-import os
 
 
 model = load_model('models\\model-10-09-19-9.h5')

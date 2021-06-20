@@ -46,7 +46,7 @@ def main():
     print("Loading Data...")
 
     # load input and target .csv files
-    for root, dirs, files in os.walk(os.path.join(inputs_path)):
+    for _, _, files in os.walk(os.path.join(inputs_path)):
         for filename in files:
             x_data = load_file(os.path.join(inputs_path, filename))
             x_loaded.append(x_data)

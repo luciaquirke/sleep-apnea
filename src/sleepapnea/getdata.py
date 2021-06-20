@@ -2,7 +2,6 @@
 # print(annsamp.__dict__)        #can be used to list attributes and values of object
 # fs = sig.fs                    #can be used to find sampling rate of 250 Hz
 
-import numpy as np
 import os
 import wfdb
 import csv
