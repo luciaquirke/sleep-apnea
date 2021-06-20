@@ -16,11 +16,13 @@ def setup_directory(classifier='5shot') -> Tuple[str, str, str]:
     """Specifies the directory structures and pathways, creating any missing directories"""
     data_path = Path(
         'data/physionet.org/files/slpdb/1.0.0')
-    inputs_path = Path('data/inputs/')
-    targets_path = Path('data/5-shot-targets/')
 
     if classifier == '2shot':
         targets_path = Path('data/targets/')
+        inputs_path = Path('data/inputs')
+    else:
+        inputs_path = Path('data/5-shot-inputs/')
+        targets_path = Path('data/5-shot-targets/')
 
     data_path.mkdir(parents=True, exist_ok=True)
     inputs_path.mkdir(parents=True, exist_ok=True)

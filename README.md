@@ -34,3 +34,5 @@ You also need wget if you want to automate the downloading of Physionet data:
 ```
 brew install wget
 ```
+
+You're all set! Run `python3 -m src.sleepapnea.getdata` to retrieve and preprocess physionet data, and `python3 -m src.sleepapnea.modelarchitecture` to train your first model.

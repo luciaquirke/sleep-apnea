@@ -4,6 +4,11 @@ from collections import defaultdict
 from ..utils.utils import get_record_data, setup_directory, get_physionet_data
 
 
+def get_record_name(record_index: int, annotation_index: int) -> str:
+    return str(record_index) + '_' + \
+        str(annotation_index) + '.csv'
+
+
 def main() -> None:
     """Loads relevant data from PhysioBank using wfdb package specified in documentation and saves it to folders"""
 
@@ -71,11 +76,6 @@ def main() -> None:
     for key, value in class_count.items():
         print("\n")
         print(key, value)
-
-
-def get_record_name(record_index: int, annotation_index: int) -> str:
-    return str(record_index) + '_' + \
-        str(annotation_index) + '.csv'
 
 
 # starts main if file called as script (rather than imported)

@@ -9,6 +9,11 @@ import csv
 from ..utils.utils import get_record_data, setup_directory, get_physionet_data
 
 
+def get_record_name(record_number, epoch_number) -> str:
+    return str(record_number+1) + '_' + \
+        str(epoch_number+1) + '.csv'
+
+
 def main() -> None:
     inputs_path, targets_path, data_path = setup_directory(classifier='2shot')
 
@@ -48,8 +53,3 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-
-
-def get_record_name(record_number, epoch_number) -> str:
-    return str(record_number+1) + '_' + \
-        str(epoch_number+1) + '.csv'

@@ -23,7 +23,7 @@ from ..utils.utils import setup_directory
 
 
 def main() -> None:
-    inputs_path, targets_path, data_path = setup_directory(classifier='2shot')
+    inputs_path, targets_path, _ = setup_directory(classifier='2shot')
 
     # Set random seed
     seed = 7
@@ -36,11 +36,11 @@ def main() -> None:
     print("Loading Data...")
 
     # load input and target .csv files
-    for root, dirs, files in os.walk('.' + inputs_path):
+    for root, dirs, files in os.walk(os.path.join(inputs_path)):
         for file_name in files:
-            x_data = load_file(os.getcwd() + inputs_path + file_name)
+            x_data = load_file(os.path.join(inputs_path, file_name))
             x_loaded.append(x_data)
-            y_data = load_file(os.getcwd() + targets_path + file_name)
+            y_data = load_file(os.path.join(targets_path, file_name))
             y_loaded.append(y_data)
 
     # data loaded in
