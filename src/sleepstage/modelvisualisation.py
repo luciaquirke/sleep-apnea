@@ -1,3 +1,4 @@
+import os
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
@@ -7,7 +8,7 @@ from keras.models import load_model
 
 
 def main():
-    model = load_model('model6.h5')
+    model = load_model(os.path.join('models', 'example-trained-model.h5'))
 
     # look at model summary to see shapes between layers etc.
     model.summary()
@@ -47,9 +48,9 @@ def main():
         yf = fft(y)
         xf = np.linspace(0.0, 1.0/(2.0*T), N1//2)
         yAmp = 2.0/N1 * np.abs(yf[0:N1//2])
-        plt.subplot(10,2,(i+1))
+        plt.subplot(10, 2, (i+1))
         plt.plot(xf, yAmp, color='xkcd:azure')
-        plt.xlim(0,30)
+        plt.xlim(0, 30)
     plt.suptitle('Fourier Transforms of the Filters in the First Layer')
 
     # plot a specific filter and its fourier transform
@@ -58,7 +59,7 @@ def main():
     x = np.linspace(0.0, N1*T, N1)
     f = filters1[:, :, filterNumber]
     fig, ax = plt.subplots()
-    plt.subplot(2,1,1)
+    plt.subplot(2, 1, 1)
     ax.tick_params(labelsize=20)
     plt.plot(x, f, color='xkcd:azure')
     plt.xlabel('Time (s)', fontsize=18)
@@ -68,26 +69,26 @@ def main():
     yf = fft(y)
     xf = np.linspace(0.0, 1.0/(2.0*T), N1//2)
     yAmp = 2.0/N1 * np.abs(yf[0:N1//2])
-    plt.subplot(2,1,2)
+    plt.subplot(2, 1, 2)
     ax.tick_params(labelsize=20)
     plt.plot(xf, yAmp, color='xkcd:azure')
-    plt.xlim(0,30)
+    plt.xlim(0, 30)
     plt.xlabel('Frequency (Hz)', fontsize=18)
     plt.ylabel('Amplitude', fontsize=18)
     # plt.suptitle('Single First Layer Filter with Fourier Transform', fontsize=16)
 
     # plot heat map to visually show the fourier transform
     fig, ax = plt.subplots()
-    plt.subplot(2,1,1)
+    plt.subplot(2, 1, 1)
     plt.plot(f, color='xkcd:azure')
     plt.xlabel('Points')
     plt.ylabel('Weights')
 
-    plt.subplot(2,1,2)
-    df = pd.DataFrame(data=yAmp, index=np.around(xf,0))
+    plt.subplot(2, 1, 2)
+    df = pd.DataFrame(data=yAmp, index=np.around(xf, 0))
     df = df.transpose()
     ax = sn.heatmap(df, cmap='Blues', cbar=True)
-    plt.xlim(0,15)
+    plt.xlim(0, 15)
     plt.suptitle('Single First Layer Filter with Frequency Heat Map')
 
     plt.figure()
@@ -95,7 +96,7 @@ def main():
     filters2, biases2 = model.layers[5].get_weights()
     for i in range(40):
         f = filters2[:, filterNumber, i]
-        plt.subplot(10,4,(i+1))
+        plt.subplot(10, 4, (i+1))
         plt.plot(f, color='xkcd:azure')
     plt.figure()
 
@@ -105,7 +106,7 @@ def main():
         yf = fft(y)
         xf = np.linspace(0.0, 1.0/(2.0*T), N2//2)
         yAmp = 2.0/N2 * np.abs(yf[0:N2//2])
-        plt.subplot(10,4,(i+1))
+        plt.subplot(10, 4, (i+1))
         plt.plot(xf, yAmp, color='xkcd:azure')
         plt.xlim(0, 30)
     plt.show()
