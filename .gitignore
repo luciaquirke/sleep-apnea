@@ -1,6 +1,6 @@
 data.zip
 env*
-data/*/*
+data/**
 .python-version
 **/__pycache__/**
 .DS_Store
