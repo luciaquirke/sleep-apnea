@@ -23,7 +23,7 @@ from ..utils.utils import setup_directory
 
 
 def main(save_confusion=True):
-    """Convolutional Neural Network Creation and Evaluation. Uses data collected from the Physiobank data set and stored
+    """Convolutional Neural Network creation and evaluation. Uses data collected from the Physiobank data set and stored
     in the specified input and target folders"""
 
     print("Running...")
@@ -41,11 +41,15 @@ def main(save_confusion=True):
         inputs_path, targets_path, validation_files)
     test_generator = DataGenerator(inputs_path, targets_path, test_files)
 
-    # run model training and evaluation
+    # initialise early stopping callback
     es = EarlyStopping(monitor='val_acc', mode='max',
                        patience=5, verbose=1, restore_best_weights=True)
+
+    # train model
     history = model.fit_generator(train_generator, validation_data=validation_generator, epochs=100, verbose=1,
                                   callbacks=[es])
+
+    # test model and return accuracy
     _, accuracy = model.evaluate_generator(test_generator, verbose=0)
 
     # create test set and targets
@@ -126,9 +130,8 @@ def define_model():
 def save_model(model):
     """Saves the learned model architecture and hyperparameters to an HDF5 file which can be loaded with Keras's
     load_model function"""
-    now = datetime.datetime.now()
-    title = now.strftime("%Y-%m-%d_%H%M")
-    model.save('model_' + title)
+    timestamp = datetime.datetime.now().strftime("%Y-%m-%d_%H%M")
+    model.save('model_' + timestamp)
     print('Model saved to working directory')
 
     return None

@@ -4,7 +4,7 @@ import os
 import matplotlib.pyplot as plt
 import time
 
-from datetime import date
+from datetime import date, datetime
 
 from sklearn.model_selection import train_test_split
 from sklearn.utils import shuffle
@@ -25,6 +25,7 @@ from keras.utils import to_categorical
 from keras.callbacks import EarlyStopping
 
 from ..utils.utils import setup_directory
+from ..sleepstage.modelarchitecture import save_model
 
 
 # loads data from a single .csv file
@@ -33,8 +34,113 @@ def load_file(filepath):
     return dataframe.values
 
 
+def define_model():
+    """Defines CNN layers"""
+    # initialise model
+    model = Sequential()
+
+    # Convolutional Layer 1
+    model.add(Conv1D(filters=20, kernel_size=125, input_shape=(7500, 1)))
+    model.add(BatchNormalization())
+    model.add(Activation('elu'))
+    model.add(MaxPooling1D(pool_size=10))
+    model.add(Dropout(0.3))
+
+    # Convolutional Layer 2
+    model.add(Conv1D(filters=40, kernel_size=50))
+    model.add(BatchNormalization())
+    model.add(Activation('elu'))
+    model.add(MaxPooling1D(pool_size=5))
+    model.add(Dropout(0.3))
+
+    # Convolutional Layer 3
+    model.add(Conv1D(filters=60, kernel_size=10))
+    model.add(BatchNormalization())
+    model.add(Activation('elu'))
+    model.add(MaxPooling1D(pool_size=5))
+    model.add(Dropout(0.3))
+
+    # Fully Connected Layer 1
+    model.add(Flatten())
+    model.add(Dense(10, activation='elu'))
+    model.add(Dropout(0.3))
+
+    # Fully Connected Layer 2
+    model.add(Dense(2, activation='softmax'))
+
+    # configure model for training
+    model.compile(loss='categorical_crossentropy',
+                  optimizer='adam', metrics=['accuracy'])
+
+    return model
+
+
+def evaluate_model(accuracy, y_test, y_pred):
+    # calculate accuracy as a percentage
+    accuracy = accuracy * 100.0
+    print('Accuracy =', accuracy, "%")
+
+    # generate confusion matrix
+    matrix = confusion_matrix(y_test.argmax(axis=1), y_pred.argmax(axis=1))
+    print('Confusion Matrix:')
+    print(np.matrix(matrix))
+
+    # calculate d'
+    tp, fn, fp, tn = matrix.ravel()
+    dprime = norm.ppf(tn/(tn+fp)) - norm.ppf(fn/(tp+fn))
+    print('dPrime =', dprime)
+
+    # generate classification report
+    target_names = ['non-apnea', 'apnea']
+    print('Classification Report:')
+    print(classification_report(y_test.argmax(axis=1),
+          y_pred.argmax(axis=1), target_names=target_names))
+
+
+def visualise_training(history):
+    # access the accuracy and loss values found throughout training
+    acc = history.history['acc']
+    val_acc = history.history['val_acc']
+    loss = history.history['loss']
+    val_loss = history.history['val_loss']
+
+    epochs = range(1, len(acc) + 1)
+    # plot accuracy throughout training (validation and training)
+    plt.plot(epochs, acc, color='xkcd:azure')
+    plt.plot(epochs, val_acc, color='xkcd:green')
+    plt.title('Accuracy')
+    plt.xlabel('Epochs')
+    plt.ylabel('Accuracy')
+    plt.legend(['Training', 'Validation'], loc='upper left')
+    plt.figure()
+
+    # plot loss throughout training (validation and training)
+    plt.plot(epochs, loss, color='xkcd:azure')
+    plt.plot(epochs, val_loss, color='xkcd:green')
+    plt.title('Loss')
+    plt.xlabel('Epochs')
+    plt.ylabel('Loss')
+    plt.legend(['Training', 'Validation'], loc='upper left')
+    plt.figure()
+
+    # plot accuracy throughout training (just training)
+    plt.plot(epochs, acc, 'b')
+    plt.title('Training Accuracy')
+    plt.xlabel('Epochs')
+    plt.ylabel('Accuracy')
+    plt.figure()
+
+    # plot loss throughout training (just training)
+    plt.plot(epochs, loss, 'b')
+    plt.title('Training Loss')
+    plt.xlabel('Epochs')
+    plt.ylabel('Loss')
+    plt.show()
+
+
 def main():
     # name of model for saving, specified by date and time of creation
+
     name = 'model-' + str(date.today()) + '-' + \
         str(time.localtime().tm_hour) + '-' + str(time.localtime().tm_min)
 
@@ -82,41 +188,7 @@ def main():
 
     verbose, epochs, batch_size = 1, 50, 32
 
-    # initilialise model
-    model = Sequential()
-
-    # Convolutional Layer 1
-    model.add(Conv1D(filters=20, kernel_size=125, input_shape=(7500, 1)))
-    model.add(BatchNormalization())
-    model.add(Activation('elu'))
-    model.add(MaxPooling1D(pool_size=10))
-    model.add(Dropout(0.3))
-
-    # Convolutional Layer 2
-    model.add(Conv1D(filters=40, kernel_size=50))
-    model.add(BatchNormalization())
-    model.add(Activation('elu'))
-    model.add(MaxPooling1D(pool_size=5))
-    model.add(Dropout(0.3))
-
-    # Convolutional Layer 3
-    model.add(Conv1D(filters=60, kernel_size=10))
-    model.add(BatchNormalization())
-    model.add(Activation('elu'))
-    model.add(MaxPooling1D(pool_size=5))
-    model.add(Dropout(0.3))
-
-    # Fully Connected Layer 1
-    model.add(Flatten())
-    model.add(Dense(10, activation='elu'))
-    model.add(Dropout(0.3))
-
-    # Fully Connected Layer 2
-    model.add(Dense(2, activation='softmax'))
-
-    # configure model for training
-    model.compile(loss='categorical_crossentropy',
-                  optimizer='adam', metrics=['accuracy'])
+    model = define_model()
 
     # initialise early stopping callback
     es = EarlyStopping(monitor='val_acc', mode='max', patience=10,
@@ -133,69 +205,11 @@ def main():
     # find predictions model makes for test set
     y_pred = model.predict(x_test)
 
-    # calculate accuracy as a percentage
-    accuracy = accuracy * 100.0
-    print('Accuracy =', accuracy, "%")
+    evaluate_model(accuracy, y_test, y_pred)
 
-    # generate confusion matrix
-    matrix = confusion_matrix(y_test.argmax(axis=1), y_pred.argmax(axis=1))
-    print('Confusion Matrix:')
-    print(np.matrix(matrix))
+    visualise_training(history)
 
-    # calculate d'
-    tp, fn, fp, tn = matrix.ravel()
-    dprime = norm.ppf(tn/(tn+fp)) - norm.ppf(fn/(tp+fn))
-    print('dPrime =', dprime)
-
-    # generate classification report
-    target_names = ['non-apnea', 'apnea']
-    print('Classification Report:')
-    print(classification_report(y_test.argmax(axis=1),
-                                y_pred.argmax(axis=1), target_names=target_names))
-
-    # access the accuracy and loss values found throughout training
-    acc = history.history['acc']
-    val_acc = history.history['val_acc']
-    loss = history.history['loss']
-    val_loss = history.history['val_loss']
-
-    epochs = range(1, len(acc) + 1)
-
-    # plot accuracy throughout training (validation and training)
-    plt.plot(epochs, acc, color='xkcd:azure')
-    plt.plot(epochs, val_acc, color='xkcd:green')
-    plt.title('Accuracy')
-    plt.xlabel('Epochs')
-    plt.ylabel('Accuracy')
-    plt.legend(['Training', 'Validation'], loc='upper left')
-    plt.figure()
-
-    # plot loss throughout training (validation and training)
-    plt.plot(epochs, loss, color='xkcd:azure')
-    plt.plot(epochs, val_loss, color='xkcd:green')
-    plt.title('Loss')
-    plt.xlabel('Epochs')
-    plt.ylabel('Loss')
-    plt.legend(['Training', 'Validation'], loc='upper left')
-    plt.figure()
-
-    # plot accuracy throughout training (just training)
-    plt.plot(epochs, acc, 'b')
-    plt.title('Training Accuracy')
-    plt.xlabel('Epochs')
-    plt.ylabel('Accuracy')
-    plt.figure()
-
-    # plot loss throughout training (just training)
-    plt.plot(epochs, loss, 'b')
-    plt.title('Training Loss')
-    plt.xlabel('Epochs')
-    plt.ylabel('Loss')
-    plt.show()
-
-    # save the model
-    model.save(name + '.h5')
-    print('Model Saved')
+    save_model(model)
 
 
 if __name__ == "__main__":
