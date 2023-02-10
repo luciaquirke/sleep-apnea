@@ -10,6 +10,7 @@ Both models include implementation, validation, and an example trained model.
 
 - Python 3.5-3.8 (you can use [pyenv](https://github.com/pyenv/pyenv) to manage different python versions).
 - Training data from [Physionet](https://physionet.org/content/slpdb/1.0.0/).
+- This project doesn't run easily on the M1 Macbook due to TensorFlow incompatibilities
 
 ### Setup
 
